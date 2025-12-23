@@ -70,7 +70,7 @@ class KebaKeContact(metaclass=SingletonMeta):
                 # Skip if already initialized
                 return
 
-            self._stream = await asyncio_dgram.bind((bind_ip, UDP_PORT))
+            self._stream = await asyncio_dgram.bind((bind_ip, 0))
 
             # Enable broadcast for discovery
             if hasattr(socket, "SO_BROADCAST"):
@@ -83,8 +83,11 @@ class KebaKeContact(metaclass=SingletonMeta):
                 self._loop.create_task(self._internal_callback(data, remote_addr))
 
             self._loop.create_task(listen())
+            local_port = self._stream.socket.getsockname()[1]
             _LOGGER.debug(
-                "Socket binding created (%s) and listening started on port %d", bind_ip, UDP_PORT
+                "Socket binding created (%s) and listening started on local port %d",
+                bind_ip,
+                local_port,
             )
 
     async def _internal_callback(self, data: bytes, remote_addr: tuple) -> None:
